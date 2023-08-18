@@ -13,6 +13,17 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+app.get("/u/:id", (req, res) => {
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL];
+  // Check if the shortURL exists in the database
+  if (longURL) {
+    res.redirect(longURL);
+  } else {
+    res.status(404).send("Short URL not found!");
+  }
+});
+
 // Configure the app to use EJS as the template engine.
 app.set('view engine', 'ejs');
 
@@ -37,13 +48,17 @@ app.get('/urls', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  console.log(req.body);
-  res.send("Ok")
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  // Redirect to the new URL's page
+  res.redirect(`/urls/${shortURL}`);
 });
 
 // Respond with details about a specific short URL when provided its ID.
 app.get('/urls/:id', (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const templateVars = { 
+    shortURL: req.params.id, 
+    longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
 });
 
