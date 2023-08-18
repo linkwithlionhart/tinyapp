@@ -1,11 +1,9 @@
-// Import required modules.
+// Import necessary modules.
 const express = require('express');
 const app = express();
 
-// Define default port for the server.
+// Set the default port number for the server.
 const PORT = 8080;
-
-app.use(express.urlencoded({ extended: true }));
 
 // Database to store shortURLs as keys and their corresponding longURLs as values.
 const urlDatabase = {
@@ -13,66 +11,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/u/:id", (req, res) => {
-  const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
-  // Check if the shortURL exists in the database
-  if (longURL) {
-    res.redirect(longURL);
-  } else {
-    res.status(404).send("Short URL not found!");
-  }
-});
-
-// Configure the app to use EJS as the template engine.
-app.set('view engine', 'ejs');
-
-// Respond to the root route with a simple greeting.
-app.get('/', (req, res) => {
-  res.send("Hello!");
-});
-
-// Respond with the entire urlDatabase as a JSON object when requested.
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
-})
-
-// Respond with an HTML page that displays all URLs in the urlDatabase.
-app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render('urls_index', templateVars);
-});
-
-app.post('/urls', (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  // Redirect to the new URL's page
-  res.redirect(`/urls/${shortURL}`);
-});
-
-// Respond with details about a specific short URL when provided its ID.
-app.get('/urls/:id', (req, res) => {
-  const templateVars = { 
-    shortURL: req.params.id, 
-    longURL: urlDatabase[req.params.id] };
-  res.render("urls_show", templateVars);
-});
-
-// Respond to the '/hello' route with a simple HTML greeting.
-app.get('/hello', (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-// Start the server and listen on the defined port.
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
-// Generate a random string of 6 alphanumeric characters.
+// Utility function to generate random 6-character string.
 const generateRandomString = () => {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let randomString = '';
@@ -81,3 +20,66 @@ const generateRandomString = () => {
   }
   return randomString;
 };
+
+// Middleware to parse incoming request bodies.
+app.use(express.urlencoded({ extended: true }));
+
+// Set EJS as the default template engine.
+app.set('view engine', 'ejs');
+
+// Root greeting route.
+app.get('/', (req, res) => {
+  res.send("Hello!");
+});
+
+// Return URL database as JSON.
+app.get('/urls.json', (req, res) => {
+  res.json(urlDatabase);
+});
+
+// Display form to create new URL.
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+});
+
+// Display all stored URLs.
+app.get('/urls', (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render('urls_index', templateVars);
+});
+
+// Redirect from short URL to its corresponding long URL.
+app.get("/u/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+  if (longURL) {
+    res.redirect(longURL);
+  } else {
+    res.status(404).send("Short URL not found!");
+  }
+});
+
+// Add new short and long URL to the database.
+app.post('/urls', (req, res) => {
+  const id = generateRandomString();
+  urlDatabase[id] = req.body.longURL;
+  res.redirect(`/urls/${id}`);
+});
+
+// Show details of a specific short URL.
+app.get('/urls/:id', (req, res) => {
+  const templateVars = { 
+    id: req.params.id, 
+    longURL: urlDatabase[req.params.id] };
+  res.render("urls_show", templateVars);
+});
+
+// Simple HTML greeting route.
+app.get('/hello', (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+// Start the server.
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}!`);
+});
