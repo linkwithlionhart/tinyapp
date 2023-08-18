@@ -5,6 +5,8 @@ const app = express();
 // Define default port for the server.
 const PORT = 8080;
 
+app.use(express.urlencoded({ extended: true }));
+
 // Database to store shortURLs as keys and their corresponding longURLs as values.
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -24,10 +26,19 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+app.get('/urls/new', (req, res) => {
+  res.render('urls_new');
+})
+
 // Respond with an HTML page that displays all URLs in the urlDatabase.
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
+});
+
+app.post('/urls', (req, res) => {
+  console.log(req.body);
+  res.send("Ok")
 });
 
 // Respond with details about a specific short URL when provided its ID.
@@ -45,3 +56,13 @@ app.get('/hello', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+// Generate a random string of 6 alphanumeric characters.
+const generateRandomString = () => {
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let randomString = '';
+  for (let i = 0; i < 6; i++) {
+    randomString += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return randomString;
+};
