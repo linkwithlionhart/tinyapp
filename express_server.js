@@ -7,6 +7,8 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+app.set('view engine', 'ejs');
+
 // GET request to send a response to the client.
 app.get('/', (req, res) => {
   res.send("Hello!");
