@@ -74,6 +74,19 @@ app.get('/urls/:id', (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// Update a specific short URL's corresponding long URL.
+app.post('/urls/:id', (req, res) => {
+  const id = req.params.id;
+  const newLongURL = req.body.updatedLongURL;
+  // Check if short URL id exists in database.
+  if (urlDatabase[id]) {
+    urlDatabase[id] = newLongURL;
+    res.redirect('/urls');
+  } else {
+    res.status(404).send("Short URL not found!");
+  }
+});
+
 // Delete a short URL from the database.
 app.post('/urls/:id/delete', (req, res) => {
   const id = req.params.id;
