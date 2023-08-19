@@ -5,6 +5,12 @@ const app = express();
 // Set the default port number for the server.
 const PORT = 8080;
 
+// Middleware to parse incoming request bodies.
+app.use(express.urlencoded({ extended: true }));
+
+// Set EJS as the default template engine.
+app.set('view engine', 'ejs');
+
 // Database to store shortURLs as keys and their corresponding longURLs as values.
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -20,12 +26,6 @@ const generateRandomString = () => {
   }
   return randomString;
 };
-
-// Middleware to parse incoming request bodies.
-app.use(express.urlencoded({ extended: true }));
-
-// Set EJS as the default template engine.
-app.set('view engine', 'ejs');
 
 // Root greeting route.
 app.get('/', (req, res) => {
