@@ -74,6 +74,17 @@ app.get('/urls/:id', (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// Delete a short URL from the database.
+app.post('/urls/:id/delete', (req, res) => {
+  const id = req.params.id;
+  if (urlDatabase[id]) {
+    delete urlDatabase[id];
+    res.redirect('/urls');
+  } else {
+    res.status(404).send("Short URL not found!");
+  }
+});
+
 // Simple HTML greeting route.
 app.get('/hello', (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
