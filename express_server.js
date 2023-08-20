@@ -8,7 +8,7 @@ const app = express();
 // Set the default port number for the server.
 const PORT = 8080;
 
-// 3. Middlewares
+// 3. Middleware
 // Middleware to parse incoming request bodies.
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
