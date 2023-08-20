@@ -26,12 +26,30 @@ const generateRandomString = () => {
   }
   return randomString;
 };
+// Utility function to get user's ID.
+const getUserByID = id => {
+  return users[id];
+}
 
 // 5. Databases and Other Global Data Structures
 // Database to store shortURLs as keys and their corresponding longURLs as values.
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+// Database to store users and their related information.
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
 };
 
 // 6. Routes
@@ -52,24 +70,27 @@ app.get('/hello', (req, res) => {
 
 // Display all stored URLs.
 app.get('/urls', (req, res) => {
+  const user = getUserByID(req.cookies['user_id']);
   const templateVars = { 
-    username: req.cookies['username'],
+    user: user,
     urls: urlDatabase };
   res.render('urls_index', templateVars);
 });
 
 // Display form to create new URL.
 app.get('/urls/new', (req, res) => {
+  const user = getUserByID(req.cookies['user_id']);
   const templateVars = {
-    username: req.cookies['username']
+    user: user
   }
   res.render('urls_new', templateVars);
 });
 
 // Show details of a specific short URL.
 app.get('/urls/:id', (req, res) => {
+  const user = getUserByID(req.cookies['user_id']);
   const templateVars = { 
-    username: req.cookies['username'],
+    user: user,
     id: req.params.id, 
     longURL: urlDatabase[req.params.id],
   };
@@ -90,6 +111,35 @@ app.get("/u/:id", (req, res) => {
 // Route to registration.
 app.get('/register', (req, res) => {
   res.render('register');
+});
+
+// Registration handler: Route to registration endpoint that handles registration form data.
+app.post('/register', (req, res) => {
+  // Extract email and password from request body.
+  const { email, password } = req.body;
+  // Check if email and password are provided.
+  if (!email || !password) {
+    return res.status(400).send('You must provide both an email and a password.');
+  }
+  // Check if user with email already exists.
+  for (let userID in users) {
+    if (users[userID].email === email) {
+      return res.status(400).send("Email already exists. Proceed to login or try again.")
+    }
+  }
+  // Generate random ID for user.
+  const id = generateRandomString();
+  // Create new user object.
+  users[id] = {
+    id, 
+    email,
+    password
+  }
+  // Set user id cookie
+  res.cookie('user_id', id);
+  // Redirect to /urls
+  res.redirect('/urls');
+  console.log(users); // debugging
 });
 
 // Route login endpoint to set the username cookie and redirect.
