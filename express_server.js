@@ -39,17 +39,6 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-// Display form to create new URL.
-app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
-});
-
-// Display all stored URLs.
-app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render('urls_index', templateVars);
-});
-
 // Login route to set the username cookie and redirect.
 app.post('/login', (req, res) => {
   const username = req.body.username;
@@ -57,6 +46,38 @@ app.post('/login', (req, res) => {
   res.cookie('username', username);
   // Redirect the user back to '/urls' page.
   res.redirect('/urls');
+});
+
+// Logout route to clear the username cookie and redirect to '/urls'
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
+// Display all stored URLs.
+app.get('/urls', (req, res) => {
+  const templateVars = { 
+    username: req.cookies['username'],
+    urls: urlDatabase };
+  res.render('urls_index', templateVars);
+});
+
+// Display form to create new URL.
+app.get('/urls/new', (req, res) => {
+  const templateVars = {
+    username: req.cookies['username']
+  }
+  res.render('urls_new', templateVars);
+});
+
+// Show details of a specific short URL.
+app.get('/urls/:id', (req, res) => {
+  const templateVars = { 
+    username: req.cookies['username'],
+    id: req.params.id, 
+    longURL: urlDatabase[req.params.id],
+  };
+  res.render("urls_show", templateVars);
 });
 
 // Redirect from short URL to its corresponding long URL.
@@ -77,13 +98,7 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${id}`);
 });
 
-// Show details of a specific short URL.
-app.get('/urls/:id', (req, res) => {
-  const templateVars = { 
-    id: req.params.id, 
-    longURL: urlDatabase[req.params.id] };
-  res.render("urls_show", templateVars);
-});
+
 
 // Update a specific short URL's corresponding long URL.
 app.post('/urls/:id', (req, res) => {
