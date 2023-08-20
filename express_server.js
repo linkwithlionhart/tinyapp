@@ -1,12 +1,14 @@
 // Import necessary modules.
 const express = require('express');
 const app = express();
+const cookieParser = require('cookie-parser');
 
 // Set the default port number for the server.
 const PORT = 8080;
 
 // Middleware to parse incoming request bodies.
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Set EJS as the default template engine.
 app.set('view engine', 'ejs');
@@ -46,6 +48,15 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
+});
+
+// Login route to set the username cookie and redirect.
+app.post('/login', (req, res) => {
+  const username = req.body.username;
+  // Set cookie named 'username' with the provided input.
+  res.cookie('username', username);
+  // Redirect the user back to '/urls' page.
+  res.redirect('/urls');
 });
 
 // Redirect from short URL to its corresponding long URL.
