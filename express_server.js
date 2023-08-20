@@ -87,7 +87,12 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
-// Login route to set the username cookie and redirect.
+// Route to registration.
+app.get('/register', (req, res) => {
+  res.render('register');
+});
+
+// Route login endpoint to set the username cookie and redirect.
 app.post('/login', (req, res) => {
   const username = req.body.username;
   // Set cookie named 'username' with the provided input.
@@ -96,7 +101,7 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-// Logout route to clear the username cookie and redirect to '/urls'
+// Route logout endpoint to clear the username cookie and redirect to '/urls'
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');
