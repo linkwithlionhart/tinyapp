@@ -1,11 +1,14 @@
+// 1. Imports
 // Import necessary modules.
 const express = require('express');
-const app = express();
 const cookieParser = require('cookie-parser');
+const app = express();
 
+// 2. Constants and Configuration
 // Set the default port number for the server.
 const PORT = 8080;
 
+// 3. Middlewares
 // Middleware to parse incoming request bodies.
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -13,12 +16,7 @@ app.use(cookieParser());
 // Set EJS as the default template engine.
 app.set('view engine', 'ejs');
 
-// Database to store shortURLs as keys and their corresponding longURLs as values.
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
+// 4. Utility Functions
 // Utility function to generate random 6-character string.
 const generateRandomString = () => {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -29,6 +27,14 @@ const generateRandomString = () => {
   return randomString;
 };
 
+// 5. Databases and Other Global Data Structures
+// Database to store shortURLs as keys and their corresponding longURLs as values.
+const urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+};
+
+// 6. Routes
 // Root greeting route.
 app.get('/', (req, res) => {
   res.send("Hello!");
@@ -39,19 +45,9 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-// Login route to set the username cookie and redirect.
-app.post('/login', (req, res) => {
-  const username = req.body.username;
-  // Set cookie named 'username' with the provided input.
-  res.cookie('username', username);
-  // Redirect the user back to '/urls' page.
-  res.redirect('/urls');
-});
-
-// Logout route to clear the username cookie and redirect to '/urls'
-app.post('/logout', (req, res) => {
-  res.clearCookie('username');
-  res.redirect('/urls');
+// Simple HTML greeting route.
+app.get('/hello', (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 // Display all stored URLs.
@@ -91,14 +87,27 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
+// Login route to set the username cookie and redirect.
+app.post('/login', (req, res) => {
+  const username = req.body.username;
+  // Set cookie named 'username' with the provided input.
+  res.cookie('username', username);
+  // Redirect the user back to '/urls' page.
+  res.redirect('/urls');
+});
+
+// Logout route to clear the username cookie and redirect to '/urls'
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
 // Add new short and long URL to the database.
 app.post('/urls', (req, res) => {
   const id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
   res.redirect(`/urls/${id}`);
 });
-
-
 
 // Update a specific short URL's corresponding long URL.
 app.post('/urls/:id', (req, res) => {
@@ -124,11 +133,7 @@ app.post('/urls/:id/delete', (req, res) => {
   }
 });
 
-// Simple HTML greeting route.
-app.get('/hello', (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+// 7. Server Initialization
 // Start the server.
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}!`);
