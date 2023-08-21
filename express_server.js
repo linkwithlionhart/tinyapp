@@ -142,18 +142,18 @@ app.post('/register', (req, res) => {
   console.log(users); // debugging
 });
 
-// Route login endpoint to set the username cookie and redirect.
+// Route login endpoint to set the user cookie and redirect.
 app.post('/login', (req, res) => {
-  const username = req.body.username;
-  // Set cookie named 'username' with the provided input.
-  res.cookie('username', username);
+  const user = getUserByID(req.cookies['user_id']);
+  // Set cookie named 'user' with the provided input.
+  res.cookie('user', user);
   // Redirect the user back to '/urls' page.
   res.redirect('/urls');
 });
 
-// Route logout endpoint to clear the username cookie and redirect to '/urls'
+// Route logout endpoint to clear the user cookie and redirect to '/urls'
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user');
   res.redirect('/urls');
 });
 
