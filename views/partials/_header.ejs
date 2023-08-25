@@ -24,17 +24,8 @@
         <button type="submit" class="btn btn-secondary ml-2">Logout</button>
       </form>
     <% } else { %>
-      <!-- Login Form -->
-      <form method="POST" action="/login">
-        <input 
-          class=""
-          type="text" 
-          name="user.email"
-          style="width: 300px; margin: 1em"
-          placeholder="Enter email"
-        />
-        <button type="submit" class="btn btn-primary">Login</button>
-      </form>
+      <a href="/register" class="btn btn-primary">Register</a>
+      <a href="/login" class="btn-secondary">Login</a>
     <% } %>
     </div>
   </nav>
