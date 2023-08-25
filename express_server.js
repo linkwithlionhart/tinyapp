@@ -113,6 +113,11 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
+// Route to login page.
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
 // Registration handler: Route to registration endpoint that handles registration form data.
 app.post('/register', (req, res) => {
   // Extract email and password from request body.
@@ -153,7 +158,7 @@ app.post('/login', (req, res) => {
 
 // Route logout endpoint to clear the user cookie and redirect to '/urls'
 app.post('/logout', (req, res) => {
-  res.clearCookie('user');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
