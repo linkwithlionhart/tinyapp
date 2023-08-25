@@ -16,8 +16,8 @@ app.use(cookieParser());
 // Set EJS as the default template engine.
 app.set('view engine', 'ejs');
 
-// 4. Utility Functions
-// Utility function to generate random 6-character string.
+// 4. Helper Functions
+// Generate random 6-character string.
 const generateRandomString = () => {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let randomString = '';
@@ -26,10 +26,19 @@ const generateRandomString = () => {
   }
   return randomString;
 };
-// Utility function to get user's ID.
+// Get user's ID.
 const getUserByID = id => {
   return users[id];
 }
+// Fetch user based on email.
+const getUserByEmail = email => {
+  for (let userID in users) {
+    if (users[userID].email === email) {
+      return users[userID];
+    }
+  }
+  return null;
+};
 
 // 5. Databases and Other Global Data Structures
 // Database to store shortURLs as keys and their corresponding longURLs as values.
@@ -149,17 +158,21 @@ app.post('/register', (req, res) => {
 
 // Route login endpoint to set the user cookie and redirect.
 app.post('/login', (req, res) => {
-  const user = getUserByID(req.cookies['user_id']);
-  // Set cookie named 'user' with the provided input.
-  res.cookie('user', user);
-  // Redirect the user back to '/urls' page.
+  const { email, password } = req.body;
+  // Find user based on email.
+  const user = getUserByEmail(email);
+  if (!user || user.password !== password) {
+    return res.status(403).send("Email or password incorrect.");
+  }
+  // On successful login, set user_id cookie and redirect to '/urls'
+  res.cookie('user_id', user.id);
   res.redirect('/urls');
 });
 
 // Route logout endpoint to clear the user cookie and redirect to '/urls'
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 // Add new short and long URL to the database.
