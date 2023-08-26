@@ -199,7 +199,7 @@ app.post('/urls', (req, res) => {
   // Redirect users not logged in.
   const user = getUserByID(req.cookies['user_id']);
   if (!user) {
-    return res.status(400).send("You must be logged in to shorten URLs.");
+    return res.status(403).send("You must be logged in to shorten URLs.");
   }
   const id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
