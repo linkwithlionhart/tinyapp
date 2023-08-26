@@ -20,7 +20,7 @@
     <!-- Check if user defined, then how appropriate part -->
     <% if (user) { %>
       <div class="navbar-nav ml-auto">
-        <span class="">Logged in as: <%= user.email %></span>
+        <span class="navbar-text" style="color: black">Logged in as: <%= user.email %></span>
         <form method="POST" action="/logout">
           <button type="submit" class="btn btn-secondary ml-2">Logout</button>
         </form>
