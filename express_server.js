@@ -12,7 +12,6 @@ const PORT = 8080;
 // Middleware to parse incoming request bodies.
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 // Set EJS as the default template engine.
 app.set('view engine', 'ejs');
 
@@ -119,12 +118,20 @@ app.get("/u/:id", (req, res) => {
 
 // Route to registration.
 app.get('/register', (req, res) => {
-  res.render('register');
+  const user = getUserByID(req.cookies['user_id']); // Fetch the user based on the user_id cookie.
+  const templateVars = {
+    user: user
+  }
+  res.render('register', templateVars);
 });
 
 // Route to login page.
 app.get('/login', (req, res) => {
-  res.render('login');
+  const user = getUserByID(req.cookies['user_id']); // Fetch the user based on the user_id cookie.
+  const templateVars = {
+    user: user
+  }
+  res.render('login', templateVars);
 });
 
 // Registration handler: Route to registration endpoint that handles registration form data.
