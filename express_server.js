@@ -91,6 +91,9 @@ app.get('/urls/new', (req, res) => {
   const templateVars = {
     user: user
   }
+  if (!user) {
+    return res.redirect('/login');
+  }
   res.render('urls_new', templateVars);
 });
 
@@ -109,29 +112,38 @@ app.get('/urls/:id', (req, res) => {
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  if (longURL) {
-    res.redirect(longURL);
-  } else {
-    res.status(404).send("Short URL not found!");
+  if (!longURL) {
+    return res.status(404).send("Short URL not found!");
   }
-});
-
-// Route to registration.
-app.get('/register', (req, res) => {
-  const user = getUserByID(req.cookies['user_id']); // Fetch the user based on the user_id cookie.
-  const templateVars = {
-    user: user
-  }
-  res.render('register', templateVars);
+  res.redirect(longURL);
 });
 
 // Route to login page.
 app.get('/login', (req, res) => {
-  const user = getUserByID(req.cookies['user_id']); // Fetch the user based on the user_id cookie.
+  // Fetch the user based on the user_id cookie.
+  const user = getUserByID(req.cookies['user_id']); 
   const templateVars = {
     user: user
   }
+  // Redirect to '/urls' when logged in.
+  if (user) {
+    return res.redirect('/urls');
+  }
   res.render('login', templateVars);
+});
+
+// Route to registration.
+app.get('/register', (req, res) => {
+  // Fetch the user based on the user_id cookie.
+  const user = getUserByID(req.cookies['user_id']); 
+  const templateVars = {
+    user: user
+  }
+  // Redirect to '/urls' when logged in.
+  if (user) {
+    return res.redirect('/urls');
+  }
+  res.render('register', templateVars);
 });
 
 // Registration handler: Route to registration endpoint that handles registration form data.
@@ -184,13 +196,23 @@ app.post('/logout', (req, res) => {
 
 // Add new short and long URL to the database.
 app.post('/urls', (req, res) => {
+  // Redirect users not logged in.
+  const user = getUserByID(req.cookies['user_id']);
+  if (!user) {
+    return res.status(400).send("You must be logged in to shorten URLs.");
+  }
   const id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
   res.redirect(`/urls/${id}`);
 });
 
 // Update a specific short URL's corresponding long URL.
-app.post('/urls/:id', (req, res) => {
+app.post('/urls/:id/update', (req, res) => {
+  // Redirect users not logged in.
+  const user = getUserByID(req.cookies['user_id']);
+  if (!user) {
+    return res.status(400).send("You must be logged in to edit long URLs.");
+  }
   const id = req.params.id;
   const newLongURL = req.body.updatedLongURL;
   // Check if short URL id exists in database.
@@ -204,6 +226,11 @@ app.post('/urls/:id', (req, res) => {
 
 // Delete a short URL from the database.
 app.post('/urls/:id/delete', (req, res) => {
+  // Redirect users not logged in.
+  const user = getUserByID(req.cookies['user_id']);
+  if (!user) {
+    return res.status(400).send("You must be logged in to delete URLs.");
+  }
   const id = req.params.id;
   if (urlDatabase[id]) {
     delete urlDatabase[id];
