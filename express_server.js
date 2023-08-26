@@ -3,6 +3,7 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const app = express();
+const bcrypt = require('bcryptjs');
 
 // 2. Constants and Configuration
 // Set the default port number for the server.
@@ -195,11 +196,13 @@ app.post('/register', (req, res) => {
   }
   // Generate random ID for user.
   const id = generateRandomString();
+  // Hash the password
+  const hashedPassword = bcrypt.hashSync(password, 10);
   // Create new user object.
   users[id] = {
     id, 
     email,
-    password
+    password: hashedPassword,
   }
   // Set user id cookie
   res.cookie('user_id', id);
@@ -213,7 +216,7 @@ app.post('/login', (req, res) => {
   const { email, password } = req.body;
   // Find user based on email.
   const user = getUserByEmail(email);
-  if (!user || user.password !== password) {
+  if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(403).send("Email or password is incorrect.");
   }
   // On successful login, set user_id cookie and redirect to '/urls'
