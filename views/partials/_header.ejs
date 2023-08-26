@@ -14,18 +14,22 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a href="/urls" class="nav-item nav-link">My URLs</a>
+        <a href="/urls/new" class="nav-item nav-link">Create New URL</a>
       </div>
     <!-- Check if user defined, then how appropriate part -->
     <% if (user) { %>
-      <span class="">Logged in as: <%= user.email %></span>
-      <form method="POST" action="/logout">
-        <button type="submit" class="btn btn-secondary ml-2">Logout</button>
-      </form>
+      <div class="navbar-nav ml-auto">
+        <span class="">Logged in as: <%= user.email %></span>
+        <form method="POST" action="/logout">
+          <button type="submit" class="btn btn-secondary ml-2">Logout</button>
+        </form>
+      </div>
     <% } else { %>
-      <a href="/register" class="btn btn-primary">Register</a>
-      <a href="/login" class="btn-secondary">Login</a>
+      <div class="navbar-nav ml-auto">
+        <a href="/register" class="nav-item nav-link">Register</a>
+        <a href="/login" class="nav-item nav-link">Login</a>
+      </div>
     <% } %>
     </div>
   </nav>
