@@ -1,7 +1,8 @@
 // 1. Imports
 // Import necessary modules.
 const express = require('express');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+//const cookieParser = require('cookie-parser');
 const app = express();
 const bcrypt = require('bcryptjs');
 
@@ -12,7 +13,11 @@ const PORT = 8080;
 // 3. Middleware
 // Middleware to parse incoming request bodies.
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+  maxAge: 24 * 60 * 60 * 1000,
+}));
 // Set EJS as the default template engine.
 app.set('view engine', 'ejs');
 
@@ -95,7 +100,7 @@ app.get('/urls.json', (req, res) => {
 
 // Display all stored URLs.
 app.get('/urls', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const user = getUserByID(userID);
   if (!user) {
     return res.send("Please log in or register to view URLs.");
@@ -110,7 +115,7 @@ app.get('/urls', (req, res) => {
 
 // Display form to create new URL.
 app.get('/urls/new', (req, res) => {
-  const user = getUserByID(req.cookies['user_id']);
+  const user = getUserByID(req.session.user_id);
   const templateVars = {
     user: user,
   }
@@ -122,7 +127,7 @@ app.get('/urls/new', (req, res) => {
 
 // Show details of a specific short URL.
 app.get('/urls/:id', (req, res) => {
-  const userID = getUserByID(req.cookies['user_id']);
+  const userID = getUserByID(req.session.user_id);
   const user = getUserByID(userID);
   const shortURL = req.params.id;
   if (!user) {
@@ -155,7 +160,7 @@ app.get("/u/:id", (req, res) => {
 // Route to login page.
 app.get('/login', (req, res) => {
   // Fetch the user based on the user_id cookie.
-  const user = getUserByID(req.cookies['user_id']); 
+  const user = getUserByID(req.session.user_id); 
   const templateVars = {
     user: user
   }
@@ -169,7 +174,7 @@ app.get('/login', (req, res) => {
 // Route to registration.
 app.get('/register', (req, res) => {
   // Fetch the user based on the user_id cookie.
-  const user = getUserByID(req.cookies['user_id']); 
+  const user = getUserByID(req.session.user_id); 
   const templateVars = {
     user: user
   }
@@ -204,11 +209,10 @@ app.post('/register', (req, res) => {
     email,
     password: hashedPassword,
   }
-  // Set user id cookie
-  res.cookie('user_id', id);
+  // Set user id in session
+  req.session.user_id = id;
   // Redirect to /urls
   res.redirect('/urls');
-  console.log(users); // debugging
 });
 
 // Route login endpoint to set the user cookie and redirect.
@@ -220,20 +224,20 @@ app.post('/login', (req, res) => {
     return res.status(403).send("Email or password is incorrect.");
   }
   // On successful login, set user_id cookie and redirect to '/urls'
-  res.cookie('user_id', user.id);
+  req.session.user_id = user.id;
   res.redirect('/urls');
 });
 
 // Route logout endpoint to clear the user cookie and redirect to '/urls'
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  delete req.session.user_id;
   res.redirect('/login');
 });
 
 // Add new short and long URL to the database.
 app.post('/urls', (req, res) => {
   // Redirect users not logged in.
-  const userID = getUserByID(req.cookies['user_id']);
+  const userID = getUserByID(req.session.user_id);
   const user = getUserByID(userID);
   if (!user) {
     return res.status(403).send("You must be logged in to shorten a URL.");
@@ -248,7 +252,7 @@ app.post('/urls', (req, res) => {
 
 // Update a specific short URL's corresponding long URL.
 app.post('/urls/:id/update', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const user = getUserByID(userID);
   const shortURL = req.params.id;
   // Redirect users not logged in.
@@ -267,7 +271,7 @@ app.post('/urls/:id/update', (req, res) => {
 
 // Delete a short URL from the database.
 app.post('/urls/:id/delete', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const user = getUserByID(userID);
   const shortURL = req.params.id;
   // Redirect users not logged in.
