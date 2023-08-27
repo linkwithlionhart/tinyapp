@@ -74,7 +74,7 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "test123",
+    password: "password",
   },
   user2RandomID: {
     id: "user2RandomID",
