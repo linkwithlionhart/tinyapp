@@ -5,6 +5,7 @@ const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const morgan = require('morgan');
 const app = express();
+const { getUserByEmail } = require('./helpers');
 
 // 2. Constants and Configuration
 // Set the default port number for the server.
@@ -37,10 +38,10 @@ const getUserByID = id => {
   return users[id];
 }
 // Fetch user based on email.
-const getUserByEmail = email => {
-  for (let userID in users) {
-    if (users[userID].email === email) {
-      return users[userID];
+const getUserByEmail = (email, database) => {
+  for (let userID in database) {
+    if (database[userID].email === email) {
+      return database[userID];
     }
   }
   return null;
@@ -193,10 +194,9 @@ app.post('/register', (req, res) => {
     return res.status(400).send('You must provide both an email and a password.');
   }
   // Check if user with email already exists.
-  for (let userID in users) {
-    if (users[userID].email === email) {
-      return res.status(400).send("Email already exists. Proceed to login or try again.")
-    }
+  const existingUser = getUserByEmail(email, users);
+  if (existingUser) {
+    return res.status(400).send("Email already exists. Proceed to login or try again.");
   }
   // Generate random ID for user.
   const id = generateRandomString();
@@ -218,7 +218,7 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   // Find user based on email.
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(403).send("Email or password is incorrect.");
   }
