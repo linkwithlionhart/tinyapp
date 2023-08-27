@@ -37,15 +37,7 @@ const generateRandomString = () => {
 const getUserByID = id => {
   return users[id];
 }
-// Fetch user based on email.
-const getUserByEmail = (email, database) => {
-  for (let userID in database) {
-    if (database[userID].email === email) {
-      return database[userID];
-    }
-  }
-  return null;
-};
+
 // Fetch URLs that belong only to user.
 const urlsForUser = id => {
   let userURLs = {};
@@ -68,6 +60,10 @@ const urlDatabase = {
     longURL: "http://www.google.com",
     userID: "user2RandomID",
   },
+  "mku007": {
+    longURL: "https://fireship.io/",
+    userID: "user3RandomID",
+  },
 };
 
 // Database to store users and their related information.
@@ -88,6 +84,11 @@ const users = {
     password: "test",
   },
 };
+
+// Hash passwords in users database.
+users["userRandomID"].password = bcrypt.hashSync("purple-monkey-dinosaur", 10);
+users["user2RandomID"].password = bcrypt.hashSync("dishwasher-funk", 10);
+users["user3RandomID"].password = bcrypt.hashSync("test", 10);
 
 // 6. Routes
 // Root greeting route.
