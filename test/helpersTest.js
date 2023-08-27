@@ -11,13 +11,23 @@ const testUsers = {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
-  }
+  },
+  "user3RandomID": {
+    id: "user3RandomID",
+    email: "test@test.ca",
+    password: "test",
+  },
 };
 
 describe('getUserByEmail', function() {
-  it('should return a user with valid email', function() {
-    const user = getUserByEmail("user@example.com", testUsers)
+  it('should return a user with valid email', () => {
+    const user = getUserByEmail("user@example.com", testUsers);
     const expectedUserID = "userRandomID";
-    // Write your assert statement here
+    assert.strictEqual(user.id, expectedUserID);
+  });
+
+  it('should return undefined for a non-existent email', () => {
+    const user = getUserByEmail("nonexistent@example.com", testUsers);
+    assert.isUndefined(user);
   });
 });
