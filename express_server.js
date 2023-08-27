@@ -2,9 +2,9 @@
 // Import necessary modules.
 const express = require('express');
 const cookieSession = require('cookie-session');
-//const cookieParser = require('cookie-parser');
-const app = express();
 const bcrypt = require('bcryptjs');
+const morgan = require('morgan');
+const app = express();
 
 // 2. Constants and Configuration
 // Set the default port number for the server.
@@ -18,6 +18,7 @@ app.use(cookieSession({
   keys: ['key1', 'key2'],
   maxAge: 24 * 60 * 60 * 1000,
 }));
+app.use(morgan('dev'));
 // Set EJS as the default template engine.
 app.set('view engine', 'ejs');
 
@@ -73,7 +74,7 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: "test123",
   },
   user2RandomID: {
     id: "user2RandomID",
@@ -100,15 +101,14 @@ app.get('/urls.json', (req, res) => {
 
 // Display all stored URLs.
 app.get('/urls', (req, res) => {
-  const userID = req.session.user_id;
-  const user = getUserByID(userID);
+  const user = getUserByID(req.session.user_id);
   if (!user) {
     return res.send("Please log in or register to view URLs.");
   }
-  const userURLs = urlsForUser(userID);
+  const userURLs = urlsForUser(user.id);
   const templateVars = { 
     user: user,
-    urls: userURLs 
+    urls: userURLs,
   };
   res.render('urls_index', templateVars);
 });
@@ -127,8 +127,7 @@ app.get('/urls/new', (req, res) => {
 
 // Show details of a specific short URL.
 app.get('/urls/:id', (req, res) => {
-  const userID = getUserByID(req.session.user_id);
-  const user = getUserByID(userID);
+  const user = getUserByID(req.session.user_id);
   const shortURL = req.params.id;
   if (!user) {
     return res.send("Please log in to view URL details.");
@@ -136,7 +135,7 @@ app.get('/urls/:id', (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send("Short URL not found.");
   }
-  if (urlDatabase[shortURL].userID !== userID) {
+  if (urlDatabase[shortURL].userID !== user.id) {
     return res.status(403).send("This URL does not belong to you!");
   }
   const templateVars = { 
@@ -162,7 +161,7 @@ app.get('/login', (req, res) => {
   // Fetch the user based on the user_id cookie.
   const user = getUserByID(req.session.user_id); 
   const templateVars = {
-    user: user
+    user: user,
   }
   // Redirect to '/urls' when logged in.
   if (user) {
@@ -176,7 +175,7 @@ app.get('/register', (req, res) => {
   // Fetch the user based on the user_id cookie.
   const user = getUserByID(req.session.user_id); 
   const templateVars = {
-    user: user
+    user: user,
   }
   // Redirect to '/urls' when logged in.
   if (user) {
@@ -237,23 +236,21 @@ app.post('/logout', (req, res) => {
 // Add new short and long URL to the database.
 app.post('/urls', (req, res) => {
   // Redirect users not logged in.
-  const userID = getUserByID(req.session.user_id);
-  const user = getUserByID(userID);
+  const user = getUserByID(req.session.user_id);
   if (!user) {
     return res.status(403).send("You must be logged in to shorten a URL.");
   }
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID,
+    userID: user.id,
   }
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Update a specific short URL's corresponding long URL.
 app.post('/urls/:id/update', (req, res) => {
-  const userID = req.session.user_id;
-  const user = getUserByID(userID);
+  const user = getUserByID(req.session.user_id);
   const shortURL = req.params.id;
   // Redirect users not logged in.
   if (!user) {
@@ -262,7 +259,7 @@ app.post('/urls/:id/update', (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send("Short URL not found.");
   }
-  if (urlDatabase[shortURL].userID !== userID) {
+  if (urlDatabase[shortURL].userID !== user.id) {
     return res.status(403).send("You cannot update an URL that does not belong to you.");
   }
   urlDatabase[shortURL].longURL = req.body.updatedLongURL;
@@ -271,8 +268,7 @@ app.post('/urls/:id/update', (req, res) => {
 
 // Delete a short URL from the database.
 app.post('/urls/:id/delete', (req, res) => {
-  const userID = req.session.user_id;
-  const user = getUserByID(userID);
+  const user = getUserByID(req.session.user_id);
   const shortURL = req.params.id;
   // Redirect users not logged in.
   if (!user) {
@@ -281,8 +277,8 @@ app.post('/urls/:id/delete', (req, res) => {
   if (!urlDatabase[shortURL]) {
     return res.status(404).send("Short URL not found");
   }
-  if (urlDatabase[shortURL].userID !== userID) {
-    return res.status(403).send("You cannot an URL that does not belong to you.");
+  if (urlDatabase[shortURL].userID !== user.id) {
+    return res.status(403).send("You cannot delete an URL that does not belong to you.");
   }
   delete urlDatabase[shortURL];
   res.redirect('/urls');
