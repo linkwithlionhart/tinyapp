@@ -3,10 +3,9 @@
  * Organized into sections:
  * 1. Imports & Constants
  * 2. Middleware Configuration
- * 3. Global Databases & Password Hashing
- * 4. GET Routes
- * 5. POST Routes
- * 6. Server Initialization
+ * 3. GET Routes
+ * 4. POST Routes
+ * 5. Server Initialization
  */
 
 // 1. Imports & Constants
@@ -15,7 +14,8 @@ const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const morgan = require('morgan');
 const app = express();
-const PORT = 8080;
+const { PORT, COOKIE_SESSION } = require('./config');
+const { urlDatabase, users } = require('./data');
 const { 
   getUserByEmail, 
   generateRandomString, 
@@ -25,53 +25,11 @@ const {
 
 // 2. Middleware Configuration
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieSession({
-  name: 'session',
-  keys: ['key1', 'key2'],
-  maxAge: 24 * 60 * 60 * 1000,
-}));
+app.use(cookieSession(COOKIE_SESSION));
 app.use(morgan('dev'));
 app.set('view engine', 'ejs');
 
-// 3. Global Databases & Password Hashing
-const urlDatabase = {
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: "userRandomID",
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "user2RandomID",
-  },
-  "mku007": {
-    longURL: "https://fireship.io/",
-    userID: "user3RandomID",
-  },
-};
-
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-  user3RandomID: {
-    id: "user3RandomID",
-    email: "test@test.ca",
-    password: "test",
-  },
-};
-
-users["userRandomID"].password = bcrypt.hashSync("purple-monkey-dinosaur", 10);
-users["user2RandomID"].password = bcrypt.hashSync("dishwasher-funk", 10);
-users["user3RandomID"].password = bcrypt.hashSync("test", 10);
-
-// 4. GET Routes
+// 3. GET Routes
 app.get('/', (req, res) => {
   res.send("Hello!");
 });
@@ -159,7 +117,7 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
-// 5. POST Routes
+// 4. POST Routes
 app.post('/register', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -240,7 +198,7 @@ app.post('/urls/:id/delete', (req, res) => {
   res.redirect('/urls');
 });
 
-// 6. Server Initialization
+// 5. Server Initialization
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}!`);
 });
